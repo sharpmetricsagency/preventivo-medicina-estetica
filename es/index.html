@@ -1,1 +1,1029 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Sharp Metrics — Infraestructura Digital para Centros de Medicina Estética</title>
 
+<!-- === GOOGLE FONTS — Plus Jakarta Sans / Inter / Instrument Serif / Fira Code === -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@1&family=Fira+Code:wght@400;500&display=swap');
+
+/* === RESET & BASE === */
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow-x: hidden; }
+
+:root {
+  --bg: #000000;
+  --surface: #050505;
+  --foreground: #F0EFF4;
+  --accent: #FF7033;
+  --accent-soft: rgba(255,112,51,0.1);
+  --accent-glow: rgba(255,112,51,0.3);
+  --border: rgba(255,255,255,0.1);
+  --border-strong: rgba(255,255,255,0.15);
+  --text-70: rgba(255,255,255,0.7);
+  --text-80: rgba(255,255,255,0.8);
+  --text-50: rgba(255,255,255,0.5);
+  --text-40: rgba(255,255,255,0.4);
+  --card: rgba(255,255,255,0.03);
+}
+
+body {
+  background: var(--bg);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* === NOISE OVERLAY GLOBAL === */
+#noise-overlay {
+  position: fixed; inset: 0;
+  z-index: 50; pointer-events: none; opacity: 0.05;
+}
+
+/* === SLIDE CONTAINER === */
+.deck { position: relative; width: 100vw; height: 100vh; height: 100dvh; }
+
+.slide {
+  position: absolute; inset: 0;
+  width: 100vw; height: 100vh; height: 100dvh;
+  display: none; overflow: hidden;
+  padding: clamp(2.5rem, 6vh, 5rem) clamp(1.25rem, 5vw, 6rem);
+  opacity: 0; transition: opacity 0.5s ease;
+}
+.slide.active { display: flex; opacity: 1; }
+.slide.active .reveal { animation: reveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+
+@keyframes reveal {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Stagger reveal helpers */
+.reveal { opacity: 0; }
+.reveal:nth-child(1) { animation-delay: 0.05s; }
+.reveal:nth-child(2) { animation-delay: 0.15s; }
+.reveal:nth-child(3) { animation-delay: 0.25s; }
+.reveal:nth-child(4) { animation-delay: 0.35s; }
+.reveal:nth-child(5) { animation-delay: 0.45s; }
+.reveal:nth-child(6) { animation-delay: 0.55s; }
+.reveal:nth-child(7) { animation-delay: 0.65s; }
+
+/* === ATMOSPHERIC BACKGROUNDS === */
+.atmo {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,112,51,0.10), transparent 38%),
+    radial-gradient(circle at 82% 78%, rgba(255,112,51,0.06), transparent 42%),
+    radial-gradient(circle at 50% 100%, rgba(255,255,255,0.02), transparent 60%);
+}
+.atmo-grid {
+  position: absolute; inset: 0; pointer-events: none; z-index: 0; opacity: 0.06;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 75%);
+}
+
+/* === SLIDE CONTENT === */
+.slide-content {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column;
+  justify-content: center; align-items: flex-start;
+  width: 100%; max-width: 1280px; margin: 0 auto;
+  flex: 1; gap: clamp(1rem, 2.5vw, 1.75rem);
+}
+
+/* === TYPOGRAPHY === */
+.kicker {
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(0.7rem, 1vw, 0.78rem);
+  letter-spacing: 0.18em;
+  color: var(--accent);
+  text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: 0.6rem;
+}
+.kicker::before {
+  content: ''; display: inline-block; width: 28px; height: 1px;
+  background: var(--accent);
+}
+
+h1.hero {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.5rem, 7vw, 5.75rem);
+  line-height: 0.96;
+  letter-spacing: -0.045em;
+  color: var(--foreground);
+}
+h1.hero .drama {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic;
+  font-weight: 400;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+
+h2.section {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: clamp(2rem, 4.8vw, 4rem);
+  line-height: 1.02;
+  letter-spacing: -0.035em;
+}
+h2.section .drama {
+  font-family: 'Instrument Serif', serif;
+  font-style: italic; font-weight: 400;
+  color: var(--accent);
+}
+
+.lead {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(1rem, 1.45vw, 1.25rem);
+  font-weight: 300;
+  line-height: 1.55;
+  color: var(--text-70);
+  max-width: 62ch;
+}
+
+.body-sm {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  color: var(--text-70);
+  line-height: 1.55;
+}
+
+/* === CHIPS === */
+.chips { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.chip {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--text-80);
+}
+.chip.accent { color: var(--accent); border-color: rgba(255,112,51,0.4); background: var(--accent-soft); }
+
+/* === CARDS === */
+.card {
+  position: relative;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1.25rem;
+  padding: clamp(1.1rem, 1.8vw, 1.65rem);
+  backdrop-filter: blur(20px);
+  transition: transform 0.4s, border-color 0.4s, box-shadow 0.4s;
+}
+.card::before {
+  content: ''; position: absolute; top: 0; left: 16px; right: 16px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+  opacity: 0.6;
+}
+.card:hover { border-color: rgba(255,112,51,0.4); transform: translateY(-3px); }
+
+.card .icon-box {
+  width: 48px; height: 48px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: var(--accent);
+  margin-bottom: 1rem;
+}
+.card .icon-box svg { width: 22px; height: 22px; stroke-width: 2; }
+
+.card h3 {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: clamp(1rem, 1.3vw, 1.15rem);
+  margin-bottom: 0.45rem;
+  letter-spacing: -0.02em;
+}
+.card p {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.85rem, 1vw, 0.95rem);
+  color: var(--text-70);
+  line-height: 1.5;
+}
+
+/* === GRID LAYOUTS === */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1rem, 2vw, 1.75rem); width: 100%; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(0.85rem, 1.5vw, 1.4rem); width: 100%; }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(1.5rem, 3vw, 3rem); width: 100%; align-items: center; }
+
+/* === BULLET LIST === */
+ul.bullets { list-style: none; display: grid; gap: 0.6rem; }
+ul.bullets li {
+  position: relative; padding-left: 1.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  color: var(--text-80);
+  line-height: 1.45;
+}
+ul.bullets li::before {
+  content: ''; position: absolute; left: 0; top: 0.55em;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(255,112,51,0.5);
+}
+
+/* === HEADER (logo + brand) === */
+.deck-header {
+  position: fixed; top: clamp(0.75rem, 1.8vh, 1.4rem); left: clamp(0.75rem, 2vw, 1.5rem);
+  z-index: 100; display: flex; align-items: center; gap: 0.65rem;
+}
+.deck-header img {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+}
+.deck-header .brand-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700; font-size: 0.95rem; letter-spacing: -0.02em;
+}
+.deck-header .brand-name span { color: var(--accent); }
+
+/* === FOOTER UI (counter + dots) === */
+.deck-counter {
+  position: fixed; bottom: clamp(0.7rem, 1.8vh, 1.4rem); right: clamp(0.75rem, 2vw, 1.5rem);
+  z-index: 100;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  color: var(--text-50);
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  backdrop-filter: blur(20px);
+}
+.deck-counter span { color: var(--accent); }
+
+.deck-nav {
+  position: fixed; bottom: clamp(0.7rem, 1.8vh, 1.4rem); left: 50%; transform: translateX(-50%);
+  z-index: 100;
+  display: flex; gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  backdrop-filter: blur(20px);
+}
+.deck-nav .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  cursor: pointer;
+  transition: all 0.3s;
+  border: none; padding: 0;
+}
+.deck-nav .dot.active { background: var(--accent); width: 22px; border-radius: 4px; box-shadow: 0 0 10px var(--accent-glow); }
+
+/* === CTA BUTTON === */
+.cta {
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  background: var(--accent);
+  color: #000;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+  padding: 0.85rem 1.6rem;
+  border-radius: 12px;
+  text-decoration: none;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: none; cursor: pointer;
+  min-height: 48px;
+}
+.cta:hover { transform: scale(1.03); box-shadow: 0 0 32px var(--accent-glow); }
+.cta svg { width: 18px; height: 18px; stroke-width: 2.2; }
+
+.cta-secondary {
+  display: inline-flex; align-items: center; gap: 0.55rem;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-70);
+  text-decoration: none;
+  padding: 0.85rem 1.25rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--card);
+  transition: border-color 0.3s, color 0.3s;
+  min-height: 48px;
+}
+.cta-secondary:hover { color: var(--accent); border-color: var(--accent); }
+
+/* === PHASE NUMBER (NOT decorative — readable, bold) === */
+.phase-number {
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 500;
+  color: var(--accent);
+  line-height: 1; letter-spacing: -0.02em;
+}
+.phase-tag {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-50);
+}
+
+/* === CONSOLE / TERMINAL (Tracciamenti slide) === */
+.console {
+  background: #000;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  box-shadow: inset 0 5px 20px rgba(0,0,0,0.5);
+  font-family: 'Fira Code', monospace;
+  font-size: clamp(0.72rem, 0.95vw, 0.85rem);
+  color: var(--accent);
+  white-space: pre-wrap;
+  line-height: 1.65;
+  width: 100%;
+}
+.console-header {
+  display: flex; gap: 0.4rem; padding-bottom: 0.65rem; margin-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border);
+}
+.console-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+.console-header .dot:nth-child(1) { background: #FF5F56; }
+.console-header .dot:nth-child(2) { background: #FFBD2E; }
+.console-header .dot:nth-child(3) { background: #27C93F; }
+.console .cmd { color: var(--text-50); }
+.console .ok  { color: #27C93F; }
+.console .accent { color: var(--accent); }
+
+/* === PRICE BOX === */
+.price-box {
+  display: flex; flex-direction: column;
+  align-items: flex-start; gap: 0.5rem;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  background: linear-gradient(135deg, rgba(255,112,51,0.10), rgba(255,112,51,0.02));
+  border: 1px solid rgba(255,112,51,0.35);
+  border-radius: 1.5rem;
+  width: 100%;
+  position: relative; overflow: hidden;
+}
+.price-box::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(to right, transparent, var(--accent), transparent);
+}
+.price-box .price-label {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-50);
+}
+.price-box .price {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: clamp(3rem, 8vw, 6.5rem);
+  line-height: 1; letter-spacing: -0.05em;
+  color: var(--accent);
+}
+.price-box .price-note {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.85rem, 1vw, 0.95rem);
+  color: var(--text-70);
+}
+
+/* === PAYMENT SCHEDULE === */
+.payment-schedule {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; width: 100%;
+}
+.payment-step {
+  padding: 1.4rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  display: flex; flex-direction: column; gap: 0.5rem;
+  position: relative;
+}
+.payment-step .pct {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 4vw, 3rem);
+  color: var(--accent);
+  line-height: 1; letter-spacing: -0.04em;
+}
+.payment-step .when {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-50);
+}
+.payment-step p {
+  font-size: 0.95rem; color: var(--text-80); line-height: 1.5;
+}
+
+/* === STATS / NUMBERS === */
+.stats-row { display: flex; gap: clamp(1.5rem, 3vw, 3rem); flex-wrap: wrap; }
+.stat .num {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 800;
+  font-size: clamp(2rem, 3.5vw, 2.75rem);
+  color: var(--accent);
+  letter-spacing: -0.04em; line-height: 1;
+}
+.stat .label {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--text-50);
+  margin-top: 0.4rem;
+}
+
+/* === CONTACT FOOTER (last slide) === */
+.contact-row {
+  display: flex; flex-wrap: wrap; gap: 1.5rem 2.5rem;
+  padding-top: 1.5rem; margin-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  width: 100%;
+}
+.contact-item {
+  display: flex; flex-direction: column; gap: 0.25rem;
+}
+.contact-item .label {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--text-50);
+}
+.contact-item .value {
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.9rem, 1.05vw, 1rem);
+  color: var(--text-80);
+}
+
+/* === FAQ LIST (used in services slides) === */
+.feature-list-compact {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem 1.5rem;
+}
+.feature-list-compact .item {
+  display: flex; align-items: flex-start; gap: 0.65rem;
+  font-family: 'Inter', sans-serif;
+  font-size: clamp(0.9rem, 1.05vw, 1rem);
+  color: var(--text-80);
+  line-height: 1.45;
+}
+.feature-list-compact .item::before {
+  content: '→';
+  color: var(--accent);
+  font-family: 'Fira Code', monospace;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
+
+/* === COVER VISUAL (right side typographic moment) === */
+.cover-visual {
+  position: relative; width: 100%; height: 100%;
+  display: flex; align-items: flex-end; justify-content: flex-end;
+  padding: 0; flex-direction: column; gap: 1rem;
+}
+.cover-visual .badge-stack {
+  display: flex; flex-direction: column; gap: 0.5rem;
+  align-items: flex-end;
+}
+
+/* ============================================ */
+/* =============== RESPONSIVE =============== */
+/* ============================================ */
+
+/* Tablet landscape */
+@media (max-width: 1024px) {
+  .slide { padding: clamp(2.5rem, 5vh, 4rem) clamp(1.25rem, 4vw, 3rem); }
+}
+
+/* Tablet portrait / mobile landscape */
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .split, .payment-schedule { grid-template-columns: 1fr !important; }
+  .split > .order-text { order: 1; }
+  .split > .order-visual { order: 2; }
+  h1.hero { font-size: clamp(2.25rem, 9vw, 3.5rem); }
+  h2.section { font-size: clamp(1.85rem, 7.5vw, 2.75rem); }
+  .feature-list-compact { grid-template-columns: 1fr; }
+  .slide { padding: clamp(4rem, 6vh, 5rem) 1.1rem clamp(4.5rem, 7vh, 5.5rem); }
+  .slide-content { gap: 1rem; }
+  .price-box .price { font-size: clamp(3.5rem, 14vw, 5rem); }
+  .stats-row { gap: 1.25rem; }
+  .stat .num { font-size: clamp(1.75rem, 7vw, 2.25rem); }
+}
+
+/* Smartphone vertical */
+@media (max-width: 480px) {
+  .deck-header img { width: 32px; height: 32px; }
+  .deck-header .brand-name { font-size: 0.85rem; }
+  .deck-nav { padding: 0.35rem 0.6rem; }
+  .deck-nav .dot { width: 6px; height: 6px; }
+  .deck-nav .dot.active { width: 18px; }
+  .deck-counter { font-size: 0.65rem; padding: 0.3rem 0.6rem; }
+  .slide { padding: 4rem 1rem 4.5rem; }
+  .card { padding: 1rem; border-radius: 1rem; }
+  .console { font-size: 0.7rem; }
+  .chip { font-size: 0.65rem; padding: 0.35rem 0.7rem; }
+  .lead { font-size: 0.95rem; }
+}
+
+/* Portrait orientation enforcement */
+@media (orientation: portrait) and (max-width: 768px) {
+  .grid-2, .grid-3, .split, .payment-schedule { grid-template-columns: 1fr !important; }
+  .slide-content { justify-content: flex-start; padding-top: 0.5rem; }
+}
+
+/* Short viewport — compress vertical spacing */
+@media (max-height: 700px) {
+  .slide { padding-top: clamp(2rem, 4vh, 3rem); padding-bottom: clamp(2.5rem, 5vh, 3.5rem); }
+  .slide-content { gap: 0.85rem; }
+}
+@media (max-height: 600px) {
+  h1.hero { font-size: clamp(2rem, 5.5vw, 3.5rem); }
+  h2.section { font-size: clamp(1.75rem, 4vw, 2.75rem); }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .reveal { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .slide { transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- === NOISE OVERLAY === -->
+<svg id="noise-overlay" xmlns="http://www.w3.org/2000/svg">
+  <filter id="noiseFilter">
+    <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+  </filter>
+  <rect width="100%" height="100%" filter="url(#noiseFilter)"/>
+</svg>
+
+<!-- === PERSISTENT HEADER (logo + brand) === -->
+<div class="deck-header">
+  <img src="data:image/webp;base64,UklGRk4FAABXRUJQVlA4IEIFAABURACdASqUAZQBPpFClksCgfkAASCWlu4XOtdq2aVf47/t/bJ/gMfp3OiWHQbhRV3jr8+XN39Yb+n0XBMIANJCmZ8+SiYpkR28i5etN0AGkhTNKCnrOkKZpQuXrTdABpH5izIuXrTdABpIUyhzw9bLVinIUzShcvWm5/6LrzrPfLb0mCmaULl6yL3ccuvWZcFy9aboANIRLenoFhSYKZpQuXrTcxOTFmCMoJ8D2kwUzShcvWm5icmJB7AsVU1LPlF2+vetNzGyZe5ZgAicvlsEGrEZgAgybreDEZPzfC7IuXrTc+wSqsiUV+kJraue9abmJ5MqMq5GtmdXQKviXCngJ2BeYQitBWbb17cbEPN97qMn509VMdpQuXrTc+wzKSG5d3fC/RuzTdwiHLwjWWgOZpQuXrSx8OZY3z5hzqHmRQRVy2RCD43aUmovNaVXuPqs+2yGG91GT9ArJZX0a+6ADO2aJ4BXj82wGLOaz3rTdABn4w4by0bYGTL3LMAZzqH+3mWSGmVP3FNu00Zl7lmAm603QATkf4z1VecPjmBxSPQANJCmaULl60pOwGVU9zb6aotwXL1pugA0kJdSPVuOZhpQuXrTdABpH5izBwZieTNKFy9aboAM96efz95ZFy9aboANJCmVo75gH4OdHbCXUHQAaSFM0oXLkI/PMuC5etN0AGkhTK0d9ZlwXL1pugA0kKZWjvrMuC5etN0AGkhTK0d9ZlwXL1puWAAA/v8Z7sz1hZVgq3H327p76Y1+k146lQfFIy8hPf9Ly+1r8hRWuXA1G+5q7ntI/sqlcb09mQdssPqbiioHl1BJT2UkSqwjigqdBI723qpvfklGIAC9wY+t7/1a5mhlJZ74l5MsxkPeNDL024eLVS04BjnUZumyd0K1/YCQwAwgGP/FIv4SmLo1XknIH/YwNZhwz16PY7//8aHnNW3B44PUU9fvvMXWgWmU8qz3nGN9nnk//ZbYnHZrtt/8k8Y7Mw8sUrQn/8BVv+aDBUohDvUfn6GOWx5hrBiazKK6HtjhO94cnXWojL/2s4P2A/Z7qTm9UJ4Egbg2lsg4wjioTx1svdpCcbrDi9JN2G4MyuyWTNQsl0VtQGNqbMCYLtf2nKtAnWAAtKQvBPGMC+w/iEBAnA2kwMn5c+s+RibnWF86LEfY2xGh5Urk28s/4C5LcTvk4E8iCSuB6Qmr8NwF6y3KcXTDBeMM+Db2smZZBAYl81AhHOcRtEI8Yzd0MJJ5i2jxFsjvFffswDqRTfmoMCQaXruf2v+iHhExvVhpdQ8z2unYpCs8+slfGHP9xHxDj8BQ1WZzi+o33KW+1DJyc7CVc4uzko/tMAJkWTy4tXmWhbrX/tOV+gAO8DAeGRTZWWTe6Oo8ChLermeZy5d9S5pYK9cuyBTBmBrgF6DctxBed/7KvjU7IEexkyOeeoGL9sv59rXTrvsqXUJX/9g7Yz3Z2fL8BxJxdT+PxxSP70Z2mMEudRIUXaMHiwkNAGPMez6ev4y3e9xnvNep45rqTR3c8ZUUq0PZ6N28+7Hm7jZBGmL6b1cffze6dr0ACPIC0vPYeOCLJN1bpFBA9JLpyJL68CkaaN7OAoLA4JaqaFlLGCSwljLJlxofL5nCouKQISmZd6eOdEBWxL29OuRfhlE0nH5eGgbFkfadr45Iok27+piSU/xZvWf2OI3fBaItc17psflZQkik9k6lGeLaROX0d4jQteljctM9HsMEM0Lnfwy/V6+xQslXnqbLjUfZFTGufr4/+4fx0LhLheCSB0xXYEesAAAAAA==" alt="Sharp Metrics">
+  <div class="brand-name">Sharp<span>Metrics</span></div>
+</div>
+
+<!-- === DECK COUNTER === -->
+<div class="deck-counter"><span id="counter-current">01</span> / <span id="counter-total">12</span></div>
+
+<!-- === DECK CONTAINER === -->
+<div class="deck" id="deck">
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 01 — COVER === -->
+  <!-- ============================================ -->
+  <section class="slide active" data-slide="1">
+    <div class="atmo"></div>
+    <div class="atmo-grid"></div>
+    <div class="slide-content">
+      <div class="reveal kicker">SM-PRESUPUESTO · 2026</div>
+      <h1 class="reveal hero">
+        Infraestructura<br>
+        Digital para <span class="drama">Centros de</span><br>
+        <span class="drama">Medicina Estética</span>
+      </h1>
+      <p class="reveal lead">
+        De la web al seguimiento, de las automatizaciones a Google Ads. Una estructura autónoma que convierte las búsquedas online en reservas reales.
+      </p>
+      <div class="reveal chips">
+        <span class="chip accent">Sitio Web</span>
+        <span class="chip">Google My Business</span>
+        <span class="chip">Seguimiento</span>
+        <span class="chip">Automatizaciones Email</span>
+        <span class="chip">Google Ads</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 02 — CONTEXTO (Philosophy style) === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="2">
+    <div class="atmo"></div>
+    <div class="slide-content" style="justify-content: center; max-width: 1100px;">
+      <div class="reveal kicker">Objeto de la prestación</div>
+      <h2 class="reveal section" style="font-size: clamp(1.85rem, 4vw, 3.5rem);">
+        Una intervención <span class="drama">puntual</span> que te entrega una estructura autónoma, funcional y <span class="drama">lista para captar clientes.</span>
+      </h2>
+      <p class="reveal lead" style="margin-top: 0.5rem;">
+        Realización completa de la infraestructura digital de tu centro: sitio web, campaña Google, seguimiento, automatizaciones y visibilidad local.<br>
+        <span style="color: var(--text-50)">Construida para durar. Pensada para producir resultados.</span>
+      </p>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 03 — OBJETIVO / QUÉ RECIBIRÁS === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="3">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal">
+        <div class="kicker" style="margin-bottom: 0.85rem;">Objetivo del proyecto</div>
+        <h2 class="section">Qué recibirás <span class="drama">al final de la intervención</span></h2>
+      </div>
+      <div class="grid-3 reveal" style="margin-top: 0.5rem;">
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></div>
+          <h3>Análisis de mercado</h3>
+          <p>Estudio del mercado local y mapeo de competidores antes de cada intervención.</p>
+        </div>
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+          <h3>Sitio web profesional</h3>
+          <p>Integrado con el sistema de reservas ya en uso en el centro.</p>
+        </div>
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 21s-7-4.5-7-11a7 7 0 1 1 14 0c0 6.5-7 11-7 11Z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+          <h3>Visibilidad en Google</h3>
+          <p>Máxima exposición en las búsquedas locales de tu zona.</p>
+        </div>
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="m7 14 4-4 4 4 5-5"/></svg></div>
+          <h3>Seguimiento preciso</h3>
+          <p>Cada reserva y contacto generado es medible y atribuible.</p>
+        </div>
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.39.39.92.61 1.51.61H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></div>
+          <h3>Automatizaciones email</h3>
+          <p>Confirmación, recordatorio y seguimiento gestionados sin tu intervención.</p>
+        </div>
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></div>
+          <h3>Google Ads estructurada</h3>
+          <p>Capta a quien busca activamente tus tratamientos en tu zona.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 04 — FASE 01 ANÁLISIS === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="4">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal" style="display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap;">
+        <span class="phase-number">01</span>
+        <span class="phase-tag">Fase del proyecto</span>
+      </div>
+      <h2 class="reveal section">Análisis de mercado <span class="drama">y competencia</span></h2>
+      <p class="reveal lead">
+        Antes de construir cualquier cosa, recopilamos los datos: quiénes son tus competidores, qué buscan tus potenciales clientes, qué palabras usan para encontrar tus tratamientos. Cada decisión — del sitio a la campaña — parte de estos números.
+      </p>
+      <div class="reveal feature-list-compact" style="margin-top: 0.75rem;">
+        <div class="item">Estudio del mercado local y de la demanda online por tratamiento</div>
+        <div class="item">Mapeo de competidores: sitio, posicionamiento, reseñas, presencia en ads</div>
+        <div class="item">Definición de keywords principales y estimación de volúmenes de búsqueda</div>
+        <div class="item">Brief estratégico para configuración de sitio y campaña</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 05 — FASE 02 SITIO WEB === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="5">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal" style="display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap;">
+        <span class="phase-number">02</span>
+        <span class="phase-tag">Fase del proyecto</span>
+      </div>
+      <h2 class="reveal section">Sitio web <span class="drama">que convierte</span></h2>
+      <p class="reveal lead">
+        Tu sitio es la primera cita con el cliente, antes incluso de que entre en el centro. Rápido en móvil, convincente, con el sistema de reservas integrado directamente en el que ya usas.
+      </p>
+      <div class="reveal feature-list-compact" style="margin-top: 0.75rem;">
+        <div class="item">Sitio profesional optimizado para el sector medicina estética</div>
+        <div class="item">Páginas dedicadas para cada tratamiento principal</div>
+        <div class="item">Página de profesional con credenciales y especializaciones</div>
+        <div class="item">Integración con el sistema de reservas de la actividad</div>
+        <div class="item">FAQ por tratamiento</div>
+        <div class="item">Optimización móvil y velocidad de carga</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 06 — FASE 03 GMB === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="6">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal" style="display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap;">
+        <span class="phase-number">03</span>
+        <span class="phase-tag">Fase del proyecto</span>
+      </div>
+      <h2 class="reveal section">Google <span class="drama">My Business</span></h2>
+      <p class="reveal lead">
+        El perfil de Google es a menudo lo primero que ve un potencial cliente, antes incluso de entrar en tu sitio. Lo configuramos y optimizamos en cada detalle para garantizar la máxima visibilidad en las búsquedas locales.
+      </p>
+      <div class="reveal feature-list-compact" style="margin-top: 0.75rem;">
+        <div class="item">Configuración y optimización completa del perfil</div>
+        <div class="item">Inserción de tratamientos, horarios, fotos, descripción optimizada</div>
+        <div class="item">Configuración para máxima visibilidad local</div>
+        <div class="item">Posicionamiento en el mapa de proximidad</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 07 — FASE 04 SEGUIMIENTO === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="7">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal" style="display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap;">
+        <span class="phase-number">04</span>
+        <span class="phase-tag">Fase del proyecto</span>
+      </div>
+      <h2 class="reveal section">Seguimiento <span class="drama">de las conversiones</span></h2>
+      <div class="split" style="margin-top: 0.5rem;">
+        <div class="order-text reveal">
+          <p class="lead" style="margin-bottom: 1rem;">
+            Saber cuántas personas visitan el sitio es inútil. Lo que cuenta es saber cuántas visitas se convierten en reservas, de qué canal llegan y cuánto te cuesta adquirir un cliente.
+          </p>
+          <ul class="bullets">
+            <li>Instalación y configuración de GA4</li>
+            <li>Configuración de Google Tag Manager</li>
+            <li>Configuración de Meta Pixel</li>
+            <li>Seguimiento de eventos: reserva, llamada, solicitud de información</li>
+          </ul>
+        </div>
+        <div class="order-visual reveal">
+          <div class="console">
+            <div class="console-header"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><span class="cmd">$</span> <span class="accent">tracking init --client centro-estetico</span>
+<span class="cmd">›</span> GA4 stream: <span class="ok">ACTIVO</span>
+<span class="cmd">›</span> GTM container: <span class="ok">DEPLOY OK</span>
+<span class="cmd">›</span> Meta Pixel: <span class="ok">FIRING</span>
+<span class="cmd">›</span> Event "booking_confirm": <span class="ok">TRACKED</span>
+<span class="cmd">›</span> Event "phone_call": <span class="ok">TRACKED</span>
+<span class="cmd">›</span> Event "form_request": <span class="ok">TRACKED</span>
+
+<span class="accent">status: TRACKING_COVERAGE_100%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 08 — FASE 05 EMAIL AUTOMATIZACIONES === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="8">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal" style="display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap;">
+        <span class="phase-number">05</span>
+        <span class="phase-tag">Fase del proyecto</span>
+      </div>
+      <h2 class="reveal section">Email marketing <span class="drama">& automatizaciones</span></h2>
+      <p class="reveal lead">
+        Cada cliente que reserva entra en un sistema automático que gestiona confirmación, recordatorio de la cita y seguimiento post-visita. Tú no haces nada: el sistema trabaja por ti.
+      </p>
+      <div class="reveal grid-3" style="margin-top: 0.75rem;">
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <h3>Confirmación de reserva</h3>
+          <p>Email automático al cliente en el momento de la reserva.</p>
+        </div>
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <h3>Recordatorio de cita</h3>
+          <p>Recordatorio 24h antes de la visita para reducir los no-show.</p>
+        </div>
+        <div class="card">
+          <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+          <h3>Seguimiento post-visita</h3>
+          <p>Mensaje tras la visita para fidelización y reseñas.</p>
+        </div>
+      </div>
+      <div class="reveal" style="margin-top: 0.5rem;">
+        <span class="chip">Mailchimp</span>
+        <span class="chip" style="margin-left: 0.4rem;">Brevo</span>
+        <span class="chip" style="margin-left: 0.4rem;">o plataforma equivalente</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 09 — FASE 06 GOOGLE ADS === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="9">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal" style="display: flex; align-items: baseline; gap: 1.25rem; flex-wrap: wrap;">
+        <span class="phase-number">06</span>
+        <span class="phase-tag">Fase del proyecto</span>
+      </div>
+      <h2 class="reveal section">Google Ads <span class="drama">— Setup de campaña</span></h2>
+      <p class="reveal lead">
+        Una campaña en Google para captar a quien busca activamente tu tratamiento en tu ciudad. Parte estructurada, con anuncios adecuados y seguimiento conectado. La gestionas tú o la confías a quien quieras.
+      </p>
+      <div class="reveal feature-list-compact" style="margin-top: 0.75rem;">
+        <div class="item">Estructura de campaña por tratamiento principal</div>
+        <div class="item">Investigación de keywords y definición de match type</div>
+        <div class="item">Redacción de anuncios por grupo de anuncios</div>
+        <div class="item">Configuración de presupuesto, pujas y targeting geográfico</div>
+        <div class="item">Configuración de conversiones conectadas al seguimiento</div>
+      </div>
+      <div class="reveal" style="padding: 1rem 1.25rem; background: var(--card); border: 1px dashed rgba(255,112,51,0.4); border-radius: 12px; margin-top: 0.75rem;">
+        <span class="kicker" style="margin-bottom: 0.4rem; display: inline-flex;">Variante disponible</span>
+        <p class="body-sm" style="color: var(--text-80); margin-top: 0.35rem;">
+          <strong style="color: var(--foreground); font-weight: 600;">Local Ads</strong> con objetivo "visitas al centro" — recomendada para presupuesto de ads reducido y visibilidad de proximidad.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 10 — INVERSIÓN === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="10">
+    <div class="atmo"></div>
+    <div class="atmo-grid"></div>
+    <div class="slide-content">
+      <div class="reveal kicker">Inversión</div>
+      <h2 class="reveal section" style="margin-bottom: 0.25rem;">
+        Infraestructura digital completa<br><span class="drama">— pago único</span>
+      </h2>
+      <div class="reveal price-box" style="margin-top: 0.75rem;">
+        <span class="price-label">Total proyecto</span>
+        <div class="price">€1.500<span style="font-size: 0.5em; color: var(--foreground); font-weight: 500;">,00</span></div>
+        <span class="price-note">Excluido presupuesto publicitario · IVA 0% (régimen forfetario)</span>
+      </div>
+      <div class="reveal stats-row" style="margin-top: 0.5rem;">
+        <div class="stat"><div class="num">6</div><div class="label">Fases incluidas</div></div>
+        <div class="stat"><div class="num">100%</div><div class="label">Seguimiento</div></div>
+        <div class="stat"><div class="num">∞</div><div class="label">Propiedad del cliente</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 11 — FORMA DE PAGO === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="11">
+    <div class="atmo"></div>
+    <div class="slide-content">
+      <div class="reveal kicker">Forma de pago</div>
+      <h2 class="reveal section">
+        Pago <span class="drama">50% + 50%</span>
+      </h2>
+      <p class="reveal lead">
+        Factura electrónica por el importe total. Pago dividido entre inicio del proyecto y entrega, para alinear el compromiso con el suministro.
+      </p>
+      <div class="reveal payment-schedule" style="margin-top: 0.75rem;">
+        <div class="payment-step">
+          <span class="when">Step 01</span>
+          <div class="pct">50%</div>
+          <p><strong style="color: var(--foreground); font-weight: 600;">Anticipo</strong> — al inicio del proyecto y firma del presupuesto.</p>
+        </div>
+        <div class="payment-step">
+          <span class="when">Step 02</span>
+          <div class="pct">50%</div>
+          <p><strong style="color: var(--foreground); font-weight: 600;">Pago final</strong> — a la entrega de la infraestructura completa y funcional.</p>
+        </div>
+      </div>
+      <div class="reveal body-sm" style="margin-top: 0.5rem; color: var(--text-50); font-style: italic;">
+        Presupuesto válido 30 días desde la fecha de emisión. Excluidos software, licencias y cualquier elemento no expresamente indicado en el documento.
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- === SLIDE 12 — CTA FINAL === -->
+  <!-- ============================================ -->
+  <section class="slide" data-slide="12">
+    <div class="atmo"></div>
+    <div class="atmo-grid"></div>
+    <div class="slide-content" style="justify-content: center;">
+      <div class="reveal kicker">¿Listo para empezar?</div>
+      <h2 class="reveal section" style="font-size: clamp(2rem, 5.5vw, 4.5rem);">
+        Convierte las búsquedas online<br>en <span class="drama">reservas reales.</span>
+      </h2>
+      <p class="reveal lead">
+        Reserva una llamada gratuita de 30 minutos. Hablamos de tu centro, de tus objetivos y de cómo la infraestructura digital puede trabajar para ti desde el primer día.
+      </p>
+      <div class="reveal" style="display: flex; flex-wrap: wrap; gap: 0.85rem; margin-top: 0.75rem;">
+        <a class="cta" href="https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1ju8l-DyS69NiadaWUH_91CgpcZ9v6ZALgYVXK6GGuUBgB8-rOfg2wMQ18h1YBxTR90NQxbI0f" target="_blank" rel="noopener noreferrer">
+          Reservar llamada
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a class="cta-secondary" href="mailto:info@sharpmetricsagency.com">info@sharpmetricsagency.com</a>
+      </div>
+      <div class="reveal contact-row">
+        <div class="contact-item">
+          <span class="label">Web</span>
+          <span class="value">sharpmetricsagency.com</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Tel</span>
+          <span class="value">+39 327 288 4015</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">WhatsApp</span>
+          <span class="value">+34 645 870 584</span>
+        </div>
+        <div class="contact-item">
+          <span class="label">Email</span>
+          <span class="value">info@sharpmetricsagency.com</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- === NAV DOTS === -->
+<nav class="deck-nav" id="deck-nav" aria-label="Navegación de slides"></nav>
+
+<!-- ============================================ -->
+<!-- === JS — NAVIGATION (keyboard + click + swipe) === -->
+<!-- ============================================ -->
+<script>
+(function () {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const counterEl = document.getElementById('counter-current');
+  const totalEl = document.getElementById('counter-total');
+  const navEl = document.getElementById('deck-nav');
+  let current = 0;
+
+  // Init counter
+  totalEl.textContent = String(total).padStart(2, '0');
+
+  // Build dots
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', 'Ir a la slide ' + (i + 1));
+    dot.addEventListener('click', () => goTo(i));
+    navEl.appendChild(dot);
+  });
+  const dots = navEl.querySelectorAll('.dot');
+
+  function goTo(i) {
+    if (i < 0 || i >= total || i === current) return;
+    slides[current].classList.remove('active');
+    dots[current].classList.remove('active');
+    current = i;
+    slides[current].classList.add('active');
+    dots[current].classList.add('active');
+    counterEl.textContent = String(current + 1).padStart(2, '0');
+    // Re-trigger reveal animations
+    const reveals = slides[current].querySelectorAll('.reveal');
+    reveals.forEach(el => {
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = '';
+    });
+  }
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); next(); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') { e.preventDefault(); goTo(0); }
+    else if (e.key === 'End') { e.preventDefault(); goTo(total - 1); }
+  });
+
+  // Click navigation (left/right half), but not on interactive elements
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, .cta, .cta-secondary, .dot, .card, .chip, input, textarea')) return;
+    const x = e.clientX;
+    const w = window.innerWidth;
+    if (x < w / 2) prev(); else next();
+  });
+
+  // Touch swipe
+  let touchStartX = 0, touchStartY = 0, touchEndX = 0, touchEndY = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    touchEndX = e.changedTouches[0].screenX;
+    touchEndY = e.changedTouches[0].screenY;
+    const dx = touchEndX - touchStartX;
+    const dy = touchEndY - touchStartY;
+    // Only horizontal swipe over 50px and dominant over vertical
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+      if (dx < 0) next(); else prev();
+    }
+  }, { passive: true });
+
+  // Hash deep link
+  if (window.location.hash) {
+    const n = parseInt(window.location.hash.replace('#', ''), 10);
+    if (!isNaN(n) && n >= 1 && n <= total) goTo(n - 1);
+  }
+})();
+</script>
+
+</body>
+</html>
