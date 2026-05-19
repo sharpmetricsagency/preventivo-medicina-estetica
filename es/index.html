@@ -510,6 +510,36 @@ ul.bullets li::before {
   .stat .num { font-size: clamp(1.75rem, 7vw, 2.25rem); }
 }
 
+/* === MOBILE SCROLL MODE — su mobile tutte le slide visibili, scroll verticale naturale === */
+@media (max-width: 768px) {
+  html, body { overflow: auto; overflow-x: hidden; height: auto; }
+  body { overflow-y: auto; }
+  .deck { height: auto; position: static; width: 100%; }
+  .slide {
+    position: relative !important;
+    inset: auto !important;
+    display: flex !important;
+    opacity: 1 !important;
+    width: 100vw;
+    min-height: 100dvh;
+    height: auto !important;
+    overflow: visible !important;
+    transition: none !important;
+  }
+  .slide + .slide { border-top: 1px solid var(--border); }
+  .slide .reveal {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .slide-content { justify-content: flex-start; padding-top: 0.5rem; padding-bottom: 1rem; }
+  /* In modalità scroll non servono dot navigator e counter */
+  .deck-nav { display: none; }
+  .deck-counter { display: none; }
+  /* Logo header con sfondo blur per restare leggibile sopra il contenuto */
+  .deck-header { background: rgba(0,0,0,0.55); backdrop-filter: blur(12px); padding: 0.35rem 0.75rem 0.35rem 0.45rem; border-radius: 999px; border: 1px solid var(--border); }
+}
+
 /* Smartphone vertical */
 @media (max-width: 480px) {
   .deck-header img { width: 32px; height: 32px; }
